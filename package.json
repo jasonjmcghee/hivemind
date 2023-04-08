@@ -26,6 +26,8 @@
     "typescript": "^5.0.4"
   },
   "dependencies": {
+    "@hocuspocus/extension-logger": "^2.0.3",
+    "@hocuspocus/extension-sqlite": "^2.0.3",
     "@hocuspocus/server": "^2.0.3",
     "cors": "^2.8.5",
     "express": "^4.18.2",
