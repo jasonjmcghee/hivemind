@@ -5,7 +5,7 @@ import {onChangePayload, Server} from "@hocuspocus/server";
 import * as path from "path";
 import {SQLite} from "@hocuspocus/extension-sqlite";
 import {Logger} from "@hocuspocus/extension-logger";
-import {fromUint8Array} from "js-base64";
+import * as Y from "yjs";
 
 // Configure Hocuspocus
 const server = Server.configure({
@@ -16,12 +16,14 @@ const server = Server.configure({
   maxDebounce: 30000,
   quiet: true,
 
+  async onConnect(data) {
+    console.log(data);
+  },
+
   async onChange(data: onChangePayload) {
     try {
-      const base64String = fromUint8Array(data.update)
-      const jsonString = Buffer.from(base64String, 'base64').toString('utf-8');
-      const jsonObject = JSON.parse(jsonString);
-      console.log(jsonObject);
+      const map = Y.decodeUpdate(data.update)
+      console.log(map);
     } catch (e) {
       console.log(e);
     }
@@ -62,10 +64,6 @@ app.ws("/collaboration/:documentName", (websocket, request) => {
   };
 
   server.handleConnection(websocket, request, context);
-});
-
-app.get("/append", (request, response) => {
-
 });
 
 app.get('*', (req, res) => {
