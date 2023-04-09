@@ -29,12 +29,14 @@
     "@hocuspocus/extension-logger": "^2.0.3",
     "@hocuspocus/extension-sqlite": "^2.0.3",
     "@hocuspocus/server": "^2.0.3",
+    "@hocuspocus/transformer": "^2.0.3",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "express-ws": "^5.0.2",
     "js-base64": "^3.7.5",
     "openai": "^3.2.1",
+    "puppeteer": "^19.8.5",
     "yjs": "^13.5.52"
   }
 }
