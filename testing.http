@@ -1,1 +1,6 @@
-GET http://localhost:1234/document/hello
+POST http://localhost:5555/message
+Content-Type: application/json
+
+{
+    "message": "How's it going?"
+}

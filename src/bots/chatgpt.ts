@@ -1,21 +1,10 @@
 import { Configuration, OpenAIApi } from "openai";
 import * as dotenv from "dotenv";
-import * as readline from "readline";
 import { Puppeteer } from "../puppeteer";
+import express from "express";
+import bodyParser from "body-parser";
 
 dotenv.config();
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
-
-const promptUser = (prompt: string): Promise<string> => {
-  return new Promise((resolve) => {
-    rl.question(prompt + "\n", (input) => {
-      resolve(input);
-    });
-  });
-};
 
 const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY,
@@ -28,29 +17,47 @@ interface Message {
   content: string;
 }
 
-const chat = async (messages: Message[]): Promise<Message> => {
-  // try {
-  const result = await openai.createChatCompletion({
-    model: "gpt-3.5-turbo",
-    messages,
-    temperature: 0.7,
-    max_tokens: 1000,
-    top_p: 1,
-    frequency_penalty: 0,
-    presence_penalty: 0,
-  });
+const SYSTEM_PROMPT = `You are a helpful AI assistant.
+Answer any questions the user poses to you using your vast knowledge and experience,
+to the best of your ability.`;
 
-  return result.data.choices[0]!.message!;
+async function* streamChatCompletion(messages) {
+  const response = await openai.createChatCompletion(
+    {
+      model: 'gpt-3.5-turbo',
+      messages: [{ role: "system", content: SYSTEM_PROMPT}, ...messages],
+      temperature: 0.7,
+      max_tokens: 1000,
+      top_p: 1,
+      frequency_penalty: 0,
+      presence_penalty: 0,
+      stream: true
+    },
+    {
+      responseType: 'stream',
+    },
+  )
 
-  // } catch (error) {
-  //   if (error.response) {
-  //     console.log(error.response.status);
-  //     console.log(error.response.data);
-  //   } else {
-  //     console.log(error.message);
-  //   }
-  // }
-};
+  for await (const chunk of response.data as any) {
+    const lines = chunk
+      .toString('utf8')
+      .split('\n')
+      .filter((line) => line.trim().startsWith('data: '))
+
+    for (const line of lines) {
+      const message = line.replace(/^data: /, '')
+      if (message === '[DONE]') {
+        return
+      }
+
+      const json = JSON.parse(message)
+      const token = json.choices[0].delta.content
+      if (token) {
+        yield token
+      }
+    }
+  }
+}
 
 const getMessages = (text: string): Message[] => {
   const splitted = text.split("\n");
@@ -60,24 +67,33 @@ const getMessages = (text: string): Message[] => {
   }));
 };
 
-const startChat = async () => {
-  const store = new Puppeteer();
-  await store.init();
+let globals = {
+  store: null
+};
 
-  // const messages: Message[] = [initalMessage];
-  // messages.push({ role: "user", content: input });
-  await store.insertContent("Hello, how can I help you?");
+(async () => {
+  globals.store = new Puppeteer();
+  await globals.store.init();
+})();
 
-  while (true) {
-    const messages = getMessages(await store.getContent());
-    const input = await promptUser(messages[messages.length - 1]!.content);
+const startChat = async (userQuery: string) => {
+  const store = globals.store;
 
-    await store.insertContent(input);
-    const messages2 = getMessages(await store.getContent());
+  await store.insertContent(userQuery);
+  const messages2 = getMessages(await store.getContent());
 
-    const output = await chat(messages2);
-    await store.insertContent(output.content);
+  await store.insertContent("");
+  for await (const chunk of streamChatCompletion(messages2)) {
+    store.insertContentChunk(chunk);
   }
 };
 
-startChat();
+const server = express();
+server.use(bodyParser.json());
+
+server.post("/message", async (request, response) => {
+  await startChat(request.body["message"]);
+  response.send("Ok");
+});
+
+server.listen(5555);

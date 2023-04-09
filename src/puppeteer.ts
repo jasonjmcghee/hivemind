@@ -36,7 +36,7 @@ export class Puppeteer {
 
   async insertContent(content: string) {
     await this.page.evaluate(async (content) => {
-      let chain = await (window as any).editor
+      await (window as any).editor
         .chain()
         .focus("end")
         .insertContent(`<p></p>`)
@@ -57,11 +57,18 @@ export class Puppeteer {
     }, content);
   }
 
+  async insertContentChunk(chunk: string) {
+    await this.page.evaluate(async (content) => {
+      (window as any).editor
+        .chain()
+        .insertContent(content)
+        .run();
+    }, chunk);
+  }
+
   async getContent() {
-    let content = "";
-    await this.page.evaluate(async () => {
-      content = await (window as any).editor?.view.state.doc.textContent.trim();
+    return await this.page.evaluate(async () => {
+      return (window as any).editor?.view.state.doc.textContent.trim();
     });
-    return content;
   }
 }
