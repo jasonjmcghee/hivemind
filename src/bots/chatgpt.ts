@@ -3,6 +3,7 @@ import * as dotenv from "dotenv";
 import { Puppeteer } from "../puppeteer";
 import express from "express";
 import bodyParser from "body-parser";
+import cors from "cors";
 
 dotenv.config();
 
@@ -90,9 +91,13 @@ const startChat = async (userQuery: string) => {
 
 const server = express();
 server.use(bodyParser.json());
+server.use(cors({
+  origin: '*'
+}));
 
 server.post("/message", async (request, response) => {
-  await startChat(request.body["message"]);
+  const message = request.body["message"];
+  await startChat(message);
   response.send("Ok");
 });
 

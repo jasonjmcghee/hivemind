@@ -21,19 +21,15 @@ const server = Server.configure({
   maxDebounce: 30000,
   quiet: true,
 
-  async onConnect(data) {
-    console.log(data);
-  },
-
-  async onChange(data: onChangePayload) {
-    try {
-      const map = Y.decodeUpdate(data.update);
-      console.log(map);
-    } catch (e) {
-      console.log(e);
-    }
-    return true;
-  },
+  // async onChange(data: onChangePayload) {
+  //   try {
+  //     const map = Y.decodeUpdate(data.update);
+  //     console.log(map);
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  //   return true;
+  // },
 
   extensions: [
     sqlite,
@@ -46,7 +42,7 @@ const {app} = expressWebsockets(express());
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(cors({
-  origin: 'http://192.168.5.*'
+  origin: 'http://192.168.7.*'
 }));
 
 // A basic http route
