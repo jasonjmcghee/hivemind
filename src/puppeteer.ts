@@ -1,25 +1,25 @@
 import * as puppeteer from "puppeteer";
-import {Browser, Page} from "puppeteer";
+import { Browser, Page } from "puppeteer";
 
-class Puppeteer {
-  browser: Browser
-  page: Page
+export class Puppeteer {
+  browser: Browser;
+  page: Page;
 
   async init() {
     this.page = await this.browser.newPage();
-    this.browser = await puppeteer.launch({headless: false});
+    this.browser = await puppeteer.launch({ headless: false });
 
-    await this.page.goto('http://localhost:5173/documents/hello');
-    await this.page.setViewport({width: 1080, height: 1024});
+    await this.page.goto("http://localhost:5173/documents/hello");
+    await this.page.setViewport({ width: 1080, height: 1024 });
     await this.page.waitForSelector(".mantine-RichTextEditor-content");
 
     await this.page.evaluate(async () => {
-      await (window as any).editor.chain()
+      await (window as any).editor
+        .chain()
         .focus("end")
         .insertContent("<p></p>")
         .run();
     });
-
   }
 
   async close() {
@@ -28,12 +28,12 @@ class Puppeteer {
 
   async insertContent(content: string) {
     await this.page.evaluate(async () => {
-      await (window as any).editor.chain()
+      await (window as any).editor
+        .chain()
         .focus("end")
         .insertContent(`<p>${content}</p>`)
         .run();
     });
-
   }
 
   async getContent() {
@@ -41,6 +41,6 @@ class Puppeteer {
     await this.page.evaluate(async () => {
       content = await (window as any).editor?.view.state.doc.textContent.trim();
     });
-    return content
+    return content;
   }
 }

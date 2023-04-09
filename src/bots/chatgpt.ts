@@ -1,6 +1,7 @@
 import { Configuration, OpenAIApi } from "openai";
 import * as dotenv from "dotenv";
 import * as readline from "readline";
+import { Puppeteer } from "../puppeteer";
 
 dotenv.config();
 const rl = readline.createInterface({
@@ -68,14 +69,14 @@ const startChat = async () => {
   await store.insertContent("Hello, how can I help you?");
 
   while (true) {
-    const messages = getMessages(await store.content());
+    const messages = getMessages(await store.getContent());
     const input = await promptUser(messages[messages.length - 1]!.content);
 
     await store.insertContent(input);
-    const messages2 = getMessages(await store.content());
+    const messages2 = getMessages(await store.getContent());
 
     const output = await chat(messages2);
-    await store.insertContent(output);
+    await store.insertContent(output.content);
   }
 };
 
