@@ -50,17 +50,31 @@ const chat = async (messages: Message[]): Promise<Message> => {
   // }
 };
 
-const initalMessage: Message = {
-  role: "system",
-  content: "Hello, how can I help you?",
+const getMessages = (text: string): Message[] => {
+  const splitted = text.split("\n");
+  return splitted.map((content, i) => ({
+    role: i % 2 === 0 ? "assistant" : "user",
+    content,
+  }));
 };
+
 const startChat = async () => {
-  const messages: Message[] = [initalMessage];
+  const store = new Puppeteer();
+  await store.init();
+
+  // const messages: Message[] = [initalMessage];
+  // messages.push({ role: "user", content: input });
+  await store.insertContent("Hello, how can I help you?");
+
   while (true) {
+    const messages = getMessages(await store.content());
     const input = await promptUser(messages[messages.length - 1]!.content);
-    messages.push({ role: "user", content: input });
-    const output = await chat(messages);
-    messages.push(output);
+
+    await store.insertContent(input);
+    const messages2 = getMessages(await store.content());
+
+    const output = await chat(messages2);
+    await store.insertContent(output);
   }
 };
 
