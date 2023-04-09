@@ -38,6 +38,7 @@ const chat = async (messages: Message[]): Promise<Message> => {
     frequency_penalty: 0,
     presence_penalty: 0,
   });
+
   return result.data.choices[0]!.message!;
 
   // } catch (error) {
