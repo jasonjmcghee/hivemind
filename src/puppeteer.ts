@@ -27,13 +27,13 @@ export class Puppeteer {
   }
 
   async insertContent(content: string) {
-    await this.page.evaluate(async () => {
+    await this.page.evaluate(async (content) => {
       await (window as any).editor
         .chain()
         .focus("end")
         .insertContent(`<p>${content}</p>`)
         .run();
-    });
+    }, content);
   }
 
   async getContent() {
