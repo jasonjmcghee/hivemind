@@ -6,8 +6,8 @@ export class Puppeteer {
   page: Page;
 
   async init() {
-    this.page = await this.browser.newPage();
     this.browser = await puppeteer.launch({ headless: false });
+    this.page = await this.browser.newPage();
 
     await this.page.goto("http://localhost:5173/documents/hello");
     await this.page.setViewport({ width: 1080, height: 1024 });
